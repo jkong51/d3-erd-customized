@@ -1,0 +1,35 @@
+[
+    {
+        "entity": "containers",
+        "entity_key": "container",
+        "entity_id": "1",
+        "fixed_x": "0.638562",
+        "fixed_y": "0.291789",
+        "status": "1",
+        "description": null,
+        "items": "1:id:id for record:",
+        "domain": "DEV"
+    },
+    {
+        "entity": "container_contents",
+        "entity_key": "container_content",
+        "entity_id": "2",
+        "fixed_x": "0.838562",
+        "fixed_y": "0.291789",
+        "status": "1",
+        "description": null,
+        "items": "1:id:id for record:, 1:container_id:container FK:1M",
+        "domain": "200 - Site"
+    },
+    {
+        "entity": "container_logs",
+        "entity_key": "container_log",
+        "entity_id": "3",
+        "fixed_x": "0.938562",
+        "fixed_y": "0.291789",
+        "status": "1",
+        "description": null,
+        "items": "1:id:id for record:,1:container_id:container FK:1M",
+        "domain": "200 - Site"
+    }
+]
