@@ -1,6 +1,5 @@
 var jsonData
 var data;
-var is_fixed = 1; // set to 0 to load the forceDirected Layout with animation
 var size_scale = 1;
 var colorsindex = ["#ff9c9c", "#ffba92", "#fedfa7", "#d5e4b2", "#b3cfd5", "#b6abd8", "#cfa7e0", "#ffb5e5", "#fff5e6"]
 var panelcolors = ["#949da9", "#f8f9fa", "#000000"];
@@ -31,38 +30,37 @@ var simulation;
 var tooltip = d3.select(".tooltip")
 var closebtn = d3.selectAll(".close")
 
-closebtn.on("click", function () {
+closebtn.on("click", function (event) {
     hidePopups();
-    showTooltip()
-})
-tooltip.on("mouseleave", function () {
-    showTooltip()
+    showTooltip(null, event)
 })
 
+tooltip.on("mouseleave", function (event) {
+    showTooltip(null, event)
+})
 
-function toggle_animation() {
-    is_fixed = !is_fixed
-}
-
-
-function showTooltip(text) {
+/**
+ * 
+ * @param {string} text text to be displayed in the tooltip
+ * @param {MouseEvent} event 
+ * @returns 
+ */
+function showTooltip(text, event) {
     tooltip.selectAll("span").remove()
     tooltip.style("left", "-4000px")
         .style("opacity", 0)
     tooltip.selectAll("button").remove()
 
     // event.preventDefault();
-    // console.log(d3.event);
-    // let pos = [event.pageX, event.pageY - 80];
+    let pos = [event.pageX, event.pageY - 80];
 
     if (text) {
-
         tooltip.append("span")
             .classed(".tool-content", true)
             .html(text)
 
-        // tooltip.style("top", pos[1] + "px")
-        //     .style("left", pos[0] + 20 + "px")
+        tooltip.style("top", pos[1] + "px")
+            .style("left", pos[0] + 20 + "px")
 
         tooltip.transition()
             .duration(4)
@@ -113,9 +111,9 @@ function factorNodes() {
         row_num = i % cols > 0 ? row_num++ : Math.ceil(i / cols);
         var fixed_x = d.fixed_x > 0 ? (d.fixed_x * width) : (i % cols * col_spacing) + col_spacing * .5
         var fixed_y = d.fixed_y > 0 ? (d.fixed_y * height) : (row_num * row_spacing) + 2 * row_spacing
-        var x = is_fixed ? fixed_x : 0;
-        var y = is_fixed ? fixed_y : 0;
-        Object.assign(d, { index: i, node_width: 0, fixed_x: x, fixed_y: y, x: 0, y: 0, fixed: is_fixed })
+        var x =  fixed_x;
+        var y = fixed_y;
+        Object.assign(d, { index: i, node_width: 0, fixed_x: x, fixed_y: y, x: 0, y: 0})
     })
 
 }
@@ -130,7 +128,6 @@ function factorData() {
                 label: d.label,
                 index: d.index,
                 status: d.status,
-                fixed: d.fixed,
                 fixed_x: d.fixed_x,
                 fixed_y: d.fixed_y,
                 descr: d.description,
@@ -216,7 +213,6 @@ function factorLinks() {
                         obj["target_width"] = e["node_width"];
                         obj["target_label"] = e["entity"]
                         obj["target_relationship"] = rel
-                        obj['fixed'] = is_fixed;
                         obj["domain"] = d.domain;
                         link_data.push(obj)
                     }
@@ -311,14 +307,13 @@ var addSubtext = function () {
                         .classed("node-items", true)
                         .text(l)
                         .attr("x", function (d) {
-                            let new_x = d.fixed ? d.fixed_x : d.x;
+                            let new_x = d.fixed_x;
                             return new_x
                         })
                         .attr("y", function (d) {
-                            let new_y = d.fixed ? d.fixed_y : d.y;
+                            let new_y = d.fixed_y;
                             return new_y
                         })
-                        //.attr("fixed",d.fixed)
                         .style("fill", function (d) {
                             return setTextColor(d.status - 0)
                         })
@@ -330,11 +325,11 @@ var addSubtext = function () {
                         })
 
                         .style("text-anchor", "start")
-                        .on("mouseover", function () {
-                            showTooltip(descr)
+                        .on("mouseover", function (event) {
+                            showTooltip(descr, event)
                         })
-                        .on("mouseleave", function (d) {
-                            showTooltip()
+                        .on("mouseleave", function (event) {
+                            showTooltip(null, event)
                         })
 
                     i++
@@ -479,13 +474,16 @@ function drawChart(data) {
         .force("link", d3.forceLink().id(function (d) {
             return (d.index)
         }))
+        // This line forces objects to not overlap each other
         .force("collide", d3.forceCollide(function (d) {
             return (50 + (10 * d.items.length))
         }).iterations(50))
-    .force("charge", d3.forceManyBody().strength(-10))
-    .force("center", d3.forceCenter(width * .42, height * .58))
-    .force("y", d3.forceY(0))
-    .force("x", d3.forceX(0))
+        .force("charge", d3.forceManyBody().strength(-10))
+        // This line forces objects to gravitate to the center naturally
+        .force("center", d3.forceCenter(width * .42, height * .58))
+        // This line forces objects to stay at y and x
+        .force("y", d3.forceY(0))
+        .force("x", d3.forceX(0))
 
     // transforms line x1 y1 x2 y2 into multipoint paths
     line = d3.line()
@@ -598,10 +596,10 @@ function drawChart(data) {
             .on("end", dragended));
 
     node_header.on("mouseover", function (d) {
-        showTooltip(d.descr)
+        showTooltip(d.descr, d)
     })
     node_header.on("mouseleave", function (d) {
-        showTooltip()
+        showTooltip(null, d)
     })
 
     subtext = svg.append("g")
@@ -636,11 +634,11 @@ function drawChart(data) {
     var ticked = function () {
         node
             .attr("x", function (d) {
-                let new_x = d.fixed_x && d.fixed ? d.fixed_x : d.x;
+                let new_x = d.fixed_x;
                 return new_x + (setRectWidth(d) * -.5);
             })
             .attr("y", function (d) {
-                let new_y = is_fixed ? d.fixed_y : d.y;
+                let new_y = d.fixed_y;
                 return new_y - margin.top - row_height
             });
 
@@ -657,14 +655,14 @@ function drawChart(data) {
 
         link
             .attr("d", function (d) {
-                var t_mov_x = d.target.fixed_x < d.source.fixed_x || is_fixed == 0 ? -.52 : .52
-                var t_mov_y = d.target.fixed_y < d.source.fixed_y && is_fixed == 0 ? -.55 : 0
-                var s_mov_x = d.source.fixed_x < d.target.fixed_x || is_fixed == 0 ? -.52 : .52
+                var t_mov_x = d.target.fixed_x < d.source.fixed_x ? -.52 : .52
+                var t_mov_y = d.target.fixed_y < d.source.fixed_y == 0 ? -.55 : 0
+                var s_mov_x = d.source.fixed_x < d.target.fixed_x == 0 ? -.52 : .52
                 var a = []
-                let new_sx = is_fixed ? d.source.fixed_x - ((d.source.node_width + 20) * s_mov_x) : d.source.x - (d.source.node_width * s_mov_x) - (10 * s_mov_x);
-                let new_sy = is_fixed ? d.source.fixed_y + (row_height * .7) : d.source.y + (row_height * .7);
-                let new_tx = is_fixed ? d.target.fixed_x - ((d.target.node_width + 10) * t_mov_x) : d.target.x + (d.target.node_width * t_mov_x) - (10 * t_mov_x);
-                let new_ty = is_fixed ? d.target.fixed_y + ((d.target_index) * row_height) + row_height : d.target.y;
+                let new_sx = d.source.fixed_x - ((d.source.node_width + 20) * s_mov_x);
+                let new_sy = d.source.fixed_y + (row_height * .7);
+                let new_tx = d.target.fixed_x - ((d.target.node_width + 10) * t_mov_x);
+                let new_ty = d.target.fixed_y + ((d.target_index) * row_height) + row_height;
                 a.push({ x: new_sx, y: new_sy });
                 a.push({ x: new_tx, y: new_ty });
                 return line(a)
@@ -716,7 +714,6 @@ function drawChart(data) {
 
 
     function dragstarted(d) {
-        d.fixed = 0;
         d.dx = d3.pointer(d, this)[0];
         if (!d.active) {
             simulation.alphaTarget(0.3).restart();
@@ -724,19 +721,13 @@ function drawChart(data) {
     }
 
     function dragged(event) {
-        if (is_fixed) {
-            event.subject.x = d3.pointer(event, this)[0];
-            event.subject.y = d3.pointer(event, this)[1] + margin.top;
-            event.subject.fixed_x = d3.pointer(event, this)[0];
-            event.subject.fixed_y = d3.pointer(event, this)[1] + margin.top;
-        } else {
-            event.subject.x = d3.pointer(event, this)[0];
-            event.subject.y = d3.pointer(event, this)[1] + margin.top;
-        }
+        event.subject.x = d3.pointer(event, this)[0];
+        event.subject.y = d3.pointer(event, this)[1] + margin.top;
+        event.subject.fixed_x = d3.pointer(event, this)[0];
+        event.subject.fixed_y = d3.pointer(event, this)[1] + margin.top;
     }
 
     function dragended(d) {
-        d.fixed = 1;
         saveChanges(d)
     }
 
