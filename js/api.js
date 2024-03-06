@@ -1,5 +1,5 @@
 
-
+// Perhaps export can be done here?
 function saveChanges(d) {
     // var data = (d.entity_id).concat("-").concat(d.x / width).concat("-").concat(d.y / height)
 
@@ -17,11 +17,12 @@ function saveChanges(d) {
     // return xhttp.send();
 }
 
+// Reads the json data, maybe from an endpoint possibly?
 function getJsonData(callback) {
 
     if (!callback) {
         // NEW
-        d3.json('data/sample_data.json').then((data) => {
+        d3.json('data/sample_camstar_data.json').then((data) => {
             load(data);
         });
 
@@ -51,7 +52,7 @@ function getJsonData(callback) {
 
 // call getJsonData(callback) to use the api to retrieve the ER data from a database
 // otherwise load the local json sample data
-
+// the part where it fires the data retrieval
 setTimeout(function () {
     getJsonData() // loads data/sample_data.json
     //getJsonData(load) // load data from database
