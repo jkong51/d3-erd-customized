@@ -40,32 +40,29 @@ tooltip.on("mouseleave", function () {
 })
 
 
-function toggleAnimation() {
-    console.log("toggle", is_fixed)
+function toggle_animation() {
     is_fixed = !is_fixed
-
-    //node.remove()
-    //init()
-    //simulation.nodes(data.nodes).alphaTarget(0.3).restart()
 }
 
 
-function showTooltip(d) {
+function showTooltip(text) {
     tooltip.selectAll("span").remove()
     tooltip.style("left", "-4000px")
         .style("opacity", 0)
     tooltip.selectAll("button").remove()
 
-    d3.event.preventDefault();
-    let pos = [d3.event.pageX, d3.event.pageY - 80];
+    // event.preventDefault();
+    // console.log(d3.event);
+    // let pos = [event.pageX, event.pageY - 80];
 
-    if (d) {
+    if (text) {
+
         tooltip.append("span")
             .classed(".tool-content", true)
-            .html(d)
+            .html(text)
 
-        tooltip.style("top", pos[1] + "px")
-            .style("left", pos[0] + 20 + "px")
+        // tooltip.style("top", pos[1] + "px")
+        //     .style("left", pos[0] + 20 + "px")
 
         tooltip.transition()
             .duration(4)
@@ -122,7 +119,6 @@ function factorNodes() {
     })
 
 }
-
 function factorData() {
     data = {
         nodes: node_data.map(function (d) {
@@ -130,6 +126,7 @@ function factorData() {
                 domain: d.domain,
                 node_width: d.node_width,
                 items: d.items,
+                physical: d.physical,
                 label: d.label,
                 index: d.index,
                 status: d.status,
@@ -152,7 +149,6 @@ function factorItems() {
 
     var objData = jsonData.map((d) => d);
 
-    // This is where they format the items in the json data
     objData.forEach(function (d) {
         var obj = { ...d }
         delete obj["items"]
@@ -205,7 +201,6 @@ function factorLinks() {
                 var a = e["items"].toString().split(",")
 
                 a.forEach(function (item, i) {
-                    console.log(item);
                     let status_label = item.split(":")
                     let label = status_label[1];
                     let rel = status_label[3]
@@ -237,7 +232,7 @@ er_keys = [...new Set(er_keys)]
 
 var load = function (jdata) {
     jsonData = jdata
-    console.table('ERD.JS')
+
     console.table(jsonData)
 
     domains = [...new Set(jsonData.map((d) => d.domain))];
@@ -254,9 +249,6 @@ var load = function (jdata) {
     factorItems()
     factorLinks()
     factorData()
-
-    //console.table(jsonData)
-    //console.table(data.links)
     drawChart(data)
     addLegend()
     addSubtext()
@@ -272,7 +264,7 @@ function setSize() {
     col_spacing = (window.innerWidth * .75) / cols;
     row_spacing = (window.innerHeight * .75) / rows;
 
-    let title_text = "CAMSTAR ERD"
+    let title_text = "ENTERPRISE ARCHITECTURE ERD"
 
     d3.select(".title")
         .html(title_text)
@@ -373,35 +365,35 @@ function addLegend() {
             return height * .4
         })
 
-    // legend.append("rect")
-    //     .style("fill", function (d) {
-    //         let c = setBackground(0)
-    //         return c
-    //     })
-    //     .attr("x", function () {
-    //         return legend_x
-    //     })
-    //     .attr("y", function () {
-    //         return (height * .35) - legend_row_height
-    //     })
-    //     .attr("rx", 4)
-    //     .attr("ry", 4)
-    //     .style("width", legend_w + 20)
-    //     .style("height", function () {
-    //         return legend_row_height + "px"
-    //     })
+    legend.append("rect")
+        .style("fill", function (d) {
+            let c = setBackground(0)
+            return c
+        })
+        .attr("x", function () {
+            return legend_x
+        })
+        .attr("y", function () {
+            return (height * .35) - legend_row_height
+        })
+        .attr("rx", 4)
+        .attr("ry", 4)
+        .style("width", legend_w + 20)
+        .style("height", function () {
+            return legend_row_height + "px"
+        })
 
-    // legend.append("text")
-    //     .style("fill", function (d) {
-    //         let c = setTextColor(1)
-    //         return c
-    //     })
-    //     .text(icons[0] + "Not approved by ARB")
-    //     .attr("transform", function (d) {
-    //         let y = (legend_row_height + height * .35) - 2 * row_height;
-    //         return "translate(" + (legend_x + 5) + "," + y + ")"
-    //     })
-    //     .style("font-style", "italic")
+    legend.append("text")
+        .style("fill", function (d) {
+            let c = setTextColor(1)
+            return c
+        })
+        .text(icons[0] + "Not approved by ARB")
+        .attr("transform", function (d) {
+            let y = (legend_row_height + height * .35) - 2 * row_height;
+            return "translate(" + (legend_x + 5) + "," + y + ")"
+        })
+        .style("font-style", "italic")
 
     legend.append("rect")
         .style("fill", function (d) {
@@ -490,10 +482,10 @@ function drawChart(data) {
         .force("collide", d3.forceCollide(function (d) {
             return (50 + (10 * d.items.length))
         }).iterations(50))
-        .force("charge", d3.forceManyBody().strength(-10))
-        .force("center", d3.forceCenter(width * .42, height * .58))
-        .force("y", d3.forceY(0))
-        .force("x", d3.forceX(0))
+    .force("charge", d3.forceManyBody().strength(-10))
+    .force("center", d3.forceCenter(width * .42, height * .58))
+    .force("y", d3.forceY(0))
+    .force("x", d3.forceX(0))
 
     // transforms line x1 y1 x2 y2 into multipoint paths
     line = d3.line()
@@ -516,7 +508,6 @@ function drawChart(data) {
         })
 
         .attr("marker-end", function (d) {
-            console.log(d)
             return 'url(#' + d.target_relationship + ')'
         })
         .attr("marker-start", function (d) {
@@ -524,7 +515,6 @@ function drawChart(data) {
         })
 
 
-    //node.data(data.nodes)
     node = svg.append("g")
         .attr("transform", "translate(" + [margin.left, margin.top] + ")")
         .attr("class", "nodes")
@@ -549,8 +539,6 @@ function drawChart(data) {
         })
         .attr("rx", 4)
         .attr("ry", 4)
-    //.exit()
-    //.remove()
 
     node.call(d3.drag()
         .on("start", dragstarted)
@@ -645,9 +633,7 @@ function drawChart(data) {
             return setRectHeight(d) + "px"
         })
 
-
     var ticked = function () {
-
         node
             .attr("x", function (d) {
                 let new_x = d.fixed_x && d.fixed ? d.fixed_x : d.x;
@@ -655,7 +641,6 @@ function drawChart(data) {
             })
             .attr("y", function (d) {
                 let new_y = is_fixed ? d.fixed_y : d.y;
-                //return (new_y + setRectHeight(d) * -.5) - 80
                 return new_y - margin.top - row_height
             });
 
@@ -709,7 +694,6 @@ function drawChart(data) {
                 .attr("x", function (d) {
                     let new_x = d.fixed_x ? d.fixed_x : d.x;
                     return new_x - setRectWidth(d) * .4;
-                    //return d.x - setRectWidth(d) * .4
                 })
                 .attr("y", function (d) {
                     // return d.y + setTextY(d) + row_height
@@ -733,24 +717,22 @@ function drawChart(data) {
 
     function dragstarted(d) {
         d.fixed = 0;
-        d.fx = d3.mouse(this)[0];
-        if (!d3.event.active) {
+        d.dx = d3.pointer(d, this)[0];
+        if (!d.active) {
             simulation.alphaTarget(0.3).restart();
         }
     }
 
-    function dragged(d) {
-
+    function dragged(event) {
         if (is_fixed) {
-            d.fx = d3.mouse(this)[0];
-            d.fy = d3.mouse(this)[1] + margin.top;
-            d.fixed_x = d.fx
-            d.fixed_y = d.fy
+            event.subject.x = d3.pointer(event, this)[0];
+            event.subject.y = d3.pointer(event, this)[1] + margin.top;
+            event.subject.fixed_x = d3.pointer(event, this)[0];
+            event.subject.fixed_y = d3.pointer(event, this)[1] + margin.top;
         } else {
-            d.fx = d3.event.x;
-            d.fy = d3.event.y;
+            event.subject.x = d3.pointer(event, this)[0];
+            event.subject.y = d3.pointer(event, this)[1] + margin.top;
         }
-
     }
 
     function dragended(d) {

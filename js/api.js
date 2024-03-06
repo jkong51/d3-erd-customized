@@ -1,26 +1,27 @@
 
 
 function saveChanges(d) {
-    var data = (d.entity_id).concat("-").concat(d.x / width).concat("-").concat(d.y / height)
+    // var data = (d.entity_id).concat("-").concat(d.x / width).concat("-").concat(d.y / height)
 
-    let url = "http://localhost:8888/d3-erd/erd_api.php?data=" + data;
+    // let url = "http://localhost:8888/d3-erd/erd_api.php?data=" + data;
 
-    var xhttp = new XMLHttpRequest();
-    xhttp.open("POST", url, true);
-    xhttp.onreadystatechange = function () {//Call a function when the state changes.
+    // var xhttp = new XMLHttpRequest();
+    // xhttp.open("POST", url, true);
+    // xhttp.onreadystatechange = function () {//Call a function when the state changes.
 
-        if (this.readyState === 4 && this.status === 200) {
-            var rt = xhttp.responseText;
-            console.log(xhttp.responseText)
-        }
-    }
-    return xhttp.send();
+    //     if (this.readyState === 4 && this.status === 200) {
+    //         var rt = xhttp.responseText;
+    //         console.log(xhttp.responseText)
+    //     }
+    // }
+    // return xhttp.send();
 }
 
 function getJsonData(callback) {
 
     if (!callback) {
-        d3.json('data/sample_camstar_data.json').then((data) => {
+        // NEW
+        d3.json('data/sample_data.json').then((data) => {
             load(data);
         });
 

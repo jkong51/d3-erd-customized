@@ -4870,7 +4870,6 @@ var   tau$1 = 2 * pi$1;
   });
 
   var json = type("application/json", function(xhr) {
-    console.log(JSON.parse(xhr.responseText));
     return JSON.parse(xhr.responseText);
   });
 
@@ -7312,6 +7311,7 @@ var   durationWeek$1 = durationDay$1 * 7;
     return [event.clientX - rect.left - node.clientLeft, event.clientY - rect.top - node.clientTop];
   }
 
+  // is triggered on mouseclick in old
   function mouse(node) {
     var event = sourceEvent();
     if (event.changedTouches) event = event.changedTouches[0];
